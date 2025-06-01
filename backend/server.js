@@ -18,9 +18,9 @@ const httpServer = createServer(app)
 const io = new SocketIO(httpServer, { cors: { origin: '*' } })
 
 // --- CORS config for credentials ---
-const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || 'http://localhost:5173'
+const FRONTEND_ORIGINS = ['http://localhost:5173', 'https://chat-app-0809.netlify.app']
 app.use(cors({
-  origin: FRONTEND_ORIGIN,
+  origin: FRONTEND_ORIGINS,
   credentials: true,
 }))
 // --- end CORS config ---
