@@ -94,10 +94,15 @@ export const sendImageMessage = async (req, res) => {
       type: 'image'
     });
     
-    res.json(msg);
+    // Emit via socket to both sender and receiver
+    const io = req.app.get('io');
+    if (io) {
+      io.to(req.user._id.toString()).emit('chat:message', msg);
+      io.to(to).emit('chat:message', msg);
+    }
     
-    // Emit via socket if needed
-    req.app.get('io')?.to(to).emit('chat:message', msg);
+    // Return the message object in response
+    res.json({ message: msg });
     
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -130,10 +135,15 @@ export const sendVoiceMessage = async (req, res) => {
       type: 'voice'
     });
     
-    res.json(msg);
+    // Emit via socket to both sender and receiver
+    const io = req.app.get('io');
+    if (io) {
+      io.to(req.user._id.toString()).emit('chat:message', msg);
+      io.to(to).emit('chat:message', msg);
+    }
     
-    // Emit via socket if needed
-    req.app.get('io')?.to(to).emit('chat:message', msg);
+    // Return the message object in response
+    res.json({ message: msg });
     
   } catch (err) {
     res.status(400).json({ error: err.message });

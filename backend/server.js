@@ -17,6 +17,9 @@ const app = express()
 const httpServer = createServer(app)
 const io = new SocketIO(httpServer, { cors: { origin: '*' } })
 
+// Store io instance in app for access in controllers
+app.set('io', io);
+
 // --- CORS config for credentials ---
 const FRONTEND_ORIGINS = ['http://localhost:5173', 'https://chat-app-0809.netlify.app']
 app.use(cors({
