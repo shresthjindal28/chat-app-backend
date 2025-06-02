@@ -2,8 +2,7 @@ import express from 'express';
 import auth from '../middleware/auth.js';
 import multer from 'multer';
 import { getMe, updateMe, updatePassword, uploadProfileImage, getNotificationSettings, updateNotificationSettings,
-  getFriends, removeFriend, sendFriendRequest, acceptFriendRequest, getNotifications, 
-  markNotificationsRead, handleNotificationAction } from '../controllers/user.js';
+  getFriends, removeFriend, getNotifications, markNotificationsRead, handleNotificationAction, sendFriendRequest, acceptFriendRequest, blockUser, reportUser, acceptFriendRequestFromNotification, declineFriendRequestFromNotification, getAllUsers } from '../controllers/user.js';
 
 const router = express.Router();
 
@@ -30,9 +29,9 @@ const upload = multer({
 });
 
 router.get('/me', auth, getMe);
-router.put('/me', auth, updateMe);
-router.put('/change-password', auth, updatePassword);
-router.post('/profile-image', auth, upload.single('image'), uploadProfileImage);
+router.patch('/me', auth, updateMe);
+router.patch('/password', auth, updatePassword);
+router.post('/upload-profile-image', auth, upload.single('image'), uploadProfileImage);
 
 // Notification settings routes
 router.get('/notification-settings', auth, getNotificationSettings);
@@ -47,6 +46,17 @@ router.post('/accept-friend-request', auth, acceptFriendRequest);
 // Notification routes
 router.get('/notifications', auth, getNotifications);
 router.post('/mark-notifications-read', auth, markNotificationsRead);
-router.post('/notification-action', auth, handleNotificationAction);
+router.post('/handle-notification-action', auth, handleNotificationAction);
+
+// Friend request handling via notification IDs
+router.post('/accept-friend-request/:notificationId', auth, acceptFriendRequestFromNotification);
+router.post('/decline-friend-request/:notificationId', auth, declineFriendRequestFromNotification);
+
+// Block and report routes
+router.post('/block-user', auth, blockUser);
+router.post('/report-user', auth, reportUser);
+
+// Users
+router.get('/all-users', auth, getAllUsers);
 
 export default router;

@@ -5,10 +5,16 @@ import fs from 'fs'
 
 export const getPeers = async (req, res) => {
   try {
-    const users = await User.find({ _id: { $ne: req.user._id } }, 'username profileImage')
-    res.json(users)
+    // Populate the user's friends with their details
+    await req.user.populate('friends', 'username profileImage bio');
+    
+    // Return the populated friends as peers
+    const peers = req.user.friends || [];
+    
+    res.json(peers);
   } catch (err) {
-    res.status(400).json({ error: err.message })
+    console.error('Error fetching peers:', err);
+    res.status(400).json({ error: err.message });
   }
 }
 
@@ -29,14 +35,24 @@ export const getHistory = async (req, res) => {
 
 export const sendMessage = async (req, res) => {
   try {
-    const { to, content, type = 'text' } = req.body
-    const msg = await Message.create({ 
-      from: req.user._id, 
-      to, 
+    const { to, content, type = 'text' } = req.body;
+    // Check friendship
+    const sender = req.user;
+    const receiver = await User.findById(to);
+    if (!receiver) return res.status(404).json({ error: 'Recipient not found' });
+    if (
+      !sender.isFriendWith(receiver._id) ||
+      !receiver.isFriendWith(sender._id)
+    ) {
+      return res.status(403).json({ error: 'You can only message friends' });
+    }
+    const msg = await Message.create({
+      from: sender._id,
+      to,
       content,
       type
-    })
-    res.json(msg)
+    });
+    res.json(msg);
   } catch (err) {
     res.status(400).json({ error: err.message })
   }

@@ -45,15 +45,26 @@ app.get('/', (req, res) => {
 })
 
 // MongoDB connection
-mongoose.connect(process.env.MONGO_URI, { 
+const isProduction = process.env.NODE_ENV === 'production';
+const localUri = process.env.MONGO_LOCAL_URI || 'mongodb://127.0.0.1:27017/chat-app';
+const atlasUri = process.env.MONGO_URI; // Atlas URI should be set in production
+
+const mongoUri = isProduction ? atlasUri : localUri;
+
+mongoose.connect(mongoUri, { 
   useNewUrlParser: true, 
   useUnifiedTopology: true,
-  ssl: true,
-  tls: true,
-  tlsAllowInvalidCertificates: true // Only use this in development
+  // Only use SSL/TLS for Atlas (production)
+  ...(isProduction
+    ? {
+        ssl: true,
+        tls: true,
+        tlsAllowInvalidCertificates: false
+      }
+    : {})
 })
   .then(() => {
-    console.log('MongoDB connected')
+    console.log('MongoDB connected:', mongoUri)
 
     // Import cloudinary config and routes/controllers after DB connection
     import('./config/cloudinary.js').then(() => {

@@ -40,6 +40,7 @@ const userSchema = new mongoose.Schema(
     friends: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     sentRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     receivedRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    blockedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   },
   {
     timestamps: true,
@@ -57,6 +58,11 @@ userSchema.pre('save', async function (next) {
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password)
 }
+
+// Check if two users are friends
+userSchema.methods.isFriendWith = function (otherUserId) {
+  return (this.friends || []).map(id => id.toString()).includes(otherUserId.toString());
+};
 
 const User = mongoose.model('User', userSchema)
 
