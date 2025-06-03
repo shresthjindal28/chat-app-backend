@@ -9,6 +9,7 @@ import { fileURLToPath } from 'url'
 import fs from 'fs'
 import cluster from 'cluster'
 import os from 'os'
+import fetch from 'node-fetch';
 
 dotenv.config()
 
@@ -33,11 +34,27 @@ app.use(cors({
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
+// Health check endpoint for uptime monitoring
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', time: new Date().toISOString() });
+});
+
+// Keep-alive ping for Render/hosted environments (prevents cold start)
+// You can use an external uptime monitor to ping this endpoint every 5-10 minutes
+if (process.env.NODE_ENV === 'production' && process.env.RENDER) {
+  setInterval(() => {
+    fetch('https://' + process.env.RENDER_EXTERNAL_HOSTNAME + '/health').catch(() => {});
+  }, 1000 * 60 * 9); // every 9 minutes
+}
+
+// Use only 1 worker on Render or if WEB_CONCURRENCY=1 to avoid cold start/memory issues
+const isRender = !!process.env.RENDER || !!process.env.RENDER_EXTERNAL_HOSTNAME;
+const numCPUs = process.env.WEB_CONCURRENCY
+  ? parseInt(process.env.WEB_CONCURRENCY)
+  : (isRender ? 1 : os.cpus().length);
+
 if (cluster.isPrimary) {
   // Master process: fork workers
-  const numCPUs = process.env.WEB_CONCURRENCY
-    ? parseInt(process.env.WEB_CONCURRENCY)
-    : os.cpus().length;
   console.log(`Primary ${process.pid} is running. Forking ${numCPUs} workers...`);
   for (let i = 0; i < numCPUs; i++) {
     cluster.fork();
@@ -137,7 +154,8 @@ if (cluster.isPrimary) {
                       }
                     });
                   })
-
+                  // Set server timeout to 60s (default is 2min, but Render may kill slow requests)
+                  httpServer.setTimeout?.(60000);
                   const PORT = process.env.PORT || 5000;
                   httpServer.listen(PORT, '0.0.0.0', (err) => {
                     if (err) {
