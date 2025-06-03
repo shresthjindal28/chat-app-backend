@@ -30,6 +30,7 @@ const upload = multer({
 
 router.get('/me', auth, getMe);
 router.patch('/me', auth, updateMe);
+router.put('/update-profile', auth, updateMe);
 router.patch('/password', auth, updatePassword);
 router.post('/upload-profile-image', auth, upload.single('image'), uploadProfileImage);
 
