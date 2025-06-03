@@ -67,8 +67,10 @@ const analyzeImage = async (req, res) => {
     // Clean up: delete the uploaded file
     await fs.unlink(req.file.path);
 
+    // Suggest alt text for SEO
     res.json({ 
-      description: response.choices[0].message.content 
+      description: response.choices[0].message.content,
+      alt: 'AI-generated description for SEO and accessibility'
     });
   } catch (error) {
     console.error('Image analysis error:', error);
@@ -94,8 +96,11 @@ const generateImage = async (req, res) => {
       style: style
     });
 
+    // Set cache headers for SEO/performance
+    res.set('Cache-Control', 'public, max-age=31536000, immutable');
     res.json({ 
-      imageUrl: response.data[0].url 
+      imageUrl: response.data[0].url,
+      alt: `AI generated image for: ${prompt}` // SEO alt text
     });
   } catch (error) {
     console.error('Image generation error:', error);
@@ -135,4 +140,4 @@ module.exports = {
   analyzeImage,
   generateImage,
   optimizeImage
-}; 
+};

@@ -2,7 +2,7 @@ import express from 'express';
 import auth from '../middleware/auth.js';
 import multer from 'multer';
 import { getMe, updateMe, updatePassword, uploadProfileImage, getNotificationSettings, updateNotificationSettings,
-  getFriends, removeFriend, getNotifications, markNotificationsRead, handleNotificationAction, sendFriendRequest, acceptFriendRequest, blockUser, reportUser, acceptFriendRequestFromNotification, declineFriendRequestFromNotification, getAllUsers } from '../controllers/user.js';
+  getFriends, removeFriend, getNotifications, markNotificationsRead, handleNotificationAction, sendFriendRequest, acceptFriendRequest, blockUser, reportUser, acceptFriendRequestFromNotification, declineFriendRequestFromNotification, getAllUsers, clearAllNotifications } from '../controllers/user.js';
 
 const router = express.Router();
 
@@ -46,6 +46,7 @@ router.post('/accept-friend-request', auth, acceptFriendRequest);
 // Notification routes
 router.get('/notifications', auth, getNotifications);
 router.post('/mark-notifications-read', auth, markNotificationsRead);
+router.delete('/notifications', auth, clearAllNotifications);
 router.post('/handle-notification-action', auth, handleNotificationAction);
 
 // Friend request handling via notification IDs
