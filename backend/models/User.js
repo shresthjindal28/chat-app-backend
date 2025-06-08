@@ -41,6 +41,9 @@ const userSchema = new mongoose.Schema(
     sentRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     receivedRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     blockedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    otp: { type: String }, // Remove required: true since it's only needed during signup
+    otpExpires: { type: Date }, // Optional: for expiry
+    otpVerified: { type: Boolean, default: false },
   },
   {
     timestamps: true,
